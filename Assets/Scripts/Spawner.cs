@@ -5,6 +5,7 @@ using UnityEngine.Events;
 
 public class Spawner : MonoBehaviour
 {
+    [SerializeField] private EventAggregator _eventAggregator;
     [SerializeField] private List<Wave> _waves;
     [SerializeField] private Transform _spawnPoint;
     [SerializeField] private Player _player;
@@ -15,35 +16,43 @@ public class Spawner : MonoBehaviour
     private int _spawned;
 
     public event UnityAction AllEnemySpawned;
-    public event UnityAction<int,int> EnemyCountChanged;
+    public event UnityAction<int, int> EnemyCountChanged;
+
+    private void OnEnable()
+    {
+        _eventAggregator.NextWaveButtonClicked += OnNextWaveButtonClicked;
+    }
+
+    private void OnDisable()
+    {
+        _eventAggregator.NextWaveButtonClicked -= OnNextWaveButtonClicked;
+    }
 
     private void Start()
     {
         SetWave(_currentWaveNumber);
+        StartCoroutine(Spawn());
     }
 
-    private void Update()
+    private void OnNextWaveButtonClicked()
     {
-        if (_currentWave == null)
-            return;
+        NextWave();
+        StartCoroutine(Spawn());
+    }
 
-        _timeAfterLastSpawn += Time.deltaTime;
-
-        if (_timeAfterLastSpawn >= _currentWave.Delay)
+    private IEnumerator Spawn()
+    {
+        for (int i = 0; i < _currentWave.Count; i++)
         {
+            yield return new WaitForSeconds(_currentWave.Delay);
+
             InstantiateEnemy();
             _spawned++;
             _timeAfterLastSpawn = 0;
             EnemyCountChanged?.Invoke(_spawned, _currentWave.Count);
         }
 
-        if (_currentWave.Count <= _spawned)
-        {
-            if (_waves.Count > _currentWaveNumber + 1)
-                AllEnemySpawned?.Invoke();
-
-            _currentWave = null;
-        }
+        AllEnemySpawned?.Invoke();
     }
 
     private void InstantiateEnemy()

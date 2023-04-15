@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ProgressBar : Bar
 {
-    [SerializeField] private Spawner _spawner;
+    private Spawner _spawner;
 
     private void OnEnable()
     {
@@ -15,5 +15,11 @@ public class ProgressBar : Bar
     private void OnDisable()
     {
         _spawner.EnemyCountChanged -= OnValueChanged;
+    }
+
+    public void Init(Spawner spawner)
+    {
+        _spawner = spawner;
+        
     }
 }

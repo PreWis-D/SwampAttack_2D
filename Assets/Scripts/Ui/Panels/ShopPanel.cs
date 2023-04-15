@@ -1,14 +1,29 @@
-﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
 
-public class Shop : MonoBehaviour
+public class ShopPanel : Panel
 {
     [SerializeField] private List<Weapon> _weapons;
     [SerializeField] private WeaponView _template;
     [SerializeField] private GameObject _itemContainer;
+    [SerializeField] private MoneyBalance _moneyBalance;
+    [SerializeField] private Button _exitButton;
 
     private Player _player;
+
+    public event UnityAction ExitButtonClicked;
+
+    private void OnEnable()
+    {
+        _exitButton.onClick.AddListener(OnExitButtonClick);
+    }
+
+    private void OnDisable()
+    {
+        _exitButton.onClick.RemoveListener(OnExitButtonClick);
+    }
 
     private void Start()
     {
@@ -21,6 +36,7 @@ public class Shop : MonoBehaviour
     public void Init(Player player)
     {
         _player = player;
+        _moneyBalance.Init(player);
     }
 
     private void AddItem(Weapon weapon)
@@ -37,11 +53,16 @@ public class Shop : MonoBehaviour
 
     private void TrySellWeapon(Weapon weapon, WeaponView view)
     {
-        if(weapon.Price <= _player.Money)
+        if (weapon.Price <= _player.Money)
         {
             _player.BuyWeapon(weapon);
             weapon.Buy();
             view.SellButtonClick -= OnSellButtonClick;
         }
+    }
+
+    private void OnExitButtonClick()
+    {
+        ExitButtonClicked?.Invoke();
     }
 }

@@ -1,12 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 
 public class MoneyBalance : MonoBehaviour
 {
     [SerializeField] private TMP_Text _money;
-    [SerializeField] private Player _player;
+
+    private Player _player;
 
     private void OnEnable()
     {
@@ -17,6 +16,11 @@ public class MoneyBalance : MonoBehaviour
     private void OnDisable()
     {
         _player.MoneyChanged -= OnMoneyChanged;
+    }
+
+    public void Init(Player player)
+    {
+        _player = player;
     }
 
     private void OnMoneyChanged(int money)

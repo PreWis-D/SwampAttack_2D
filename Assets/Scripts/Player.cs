@@ -6,10 +6,12 @@ using UnityEngine.Events;
 [RequireComponent(typeof(Animator))]
 public class Player : MonoBehaviour
 {
+    [SerializeField] private EventAggregator _eventAggregator;
     [SerializeField] private int _health;
     [SerializeField] private List<Weapon> _weapons;
     [SerializeField] private Transform _shootPoint;
 
+    private PlayerInput _playerInput;
     private Weapon _currentWeapon;
     private int _currentWeaponNumber = 0;
     private int _currentHealth;
@@ -20,6 +22,25 @@ public class Player : MonoBehaviour
     public event UnityAction<int, int> HealthChanged;
     public event UnityAction<int> MoneyChanged;
 
+    private void Awake()
+    {
+        _playerInput = GetComponent<PlayerInput>();
+    }
+
+    private void OnEnable()
+    {
+        _playerInput.MouseButtonClicked += OnMouseButtonClicked;
+        _eventAggregator.PanelShowed += OnPanelShowed;
+        _eventAggregator.PanelHided += OnPanelHided;
+    }
+
+    private void OnDisable()
+    {
+        _playerInput.MouseButtonClicked -= OnMouseButtonClicked;
+        _eventAggregator.PanelShowed -= OnPanelShowed;
+        _eventAggregator.PanelHided -= OnPanelHided;
+    }
+
     private void Start()
     {
         ChangeWeapon(_weapons[_currentWeaponNumber]);
@@ -27,12 +48,9 @@ public class Player : MonoBehaviour
         _animator = GetComponent<Animator>();
     }
 
-    private void Update()
+    private void OnMouseButtonClicked()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            _currentWeapon.Shoot(_shootPoint);
-        }
+        _currentWeapon.Shoot(_shootPoint);
     }
 
     public void ApplyDamage(int damage)
@@ -82,5 +100,15 @@ public class Player : MonoBehaviour
     private void ChangeWeapon(Weapon weapon)
     {
         _currentWeapon = weapon;
+    }
+
+    private void OnPanelShowed()
+    {
+        _playerInput.enabled = false;
+    }
+
+    private void OnPanelHided()
+    {
+        _playerInput.enabled = true;
     }
 }
